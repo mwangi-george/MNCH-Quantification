@@ -106,12 +106,45 @@ df %>%
 
 
 ```{r}
-search_data(other_counties, "forecasts_all_counties", "Caff", "product_name")
+dis <- sqlite_conn("Data-API/data")
+
+dbListTables(dis)
+
+dbWriteTable(dis, "data", response %>% mutate(period = period %>% as.character()), append = T)
+
+dbReadTable(dis, "data") 
+  
 ```
 
 
+```{r}
+library(httr)
+
+url <- "http://127.0.0.1:8000/data"
+params <- list(
+  analytic = "Iron and Folic acid supplementation (Tablet)",
+  org_unit = "Meru"
+)
+
+response <- GET(url, query = params, add_headers(accept = "application/json"))
+
+# Print the content of the response
+test <- content(response, "text") %>% fromJSON()
+
+test$data
+```
 
 
+```{r}
+curl -X 'GET' \
+  'http://127.0.0.1:8000/products' \
+  -H 'accept: application/json'
+
+
+GET("http://127.0.0.1:8000/products") %>%  
+  content() %>%
+  as_vector()
+```
 
 
 

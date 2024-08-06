@@ -4,16 +4,22 @@ comparison_plotUI <- function(id) {
     pickerInput(
       ns("analytic"),
       "Product", 
-      width = "50%",
-      choices = response %>% distinct(analytic) %>% arrange(desc(analytic)) %>% pull(analytic), multiple = F
+      width = "40%",
+      choices = GET("http://127.0.0.1:8000/products") %>%  
+        content() %>%
+        as_vector(), 
+      multiple = F
     ),
     pickerInput(
       ns("org_unit"),
       "Org Unit", 
-      width = "50%",
-      choices = response %>% distinct(org_unit) %>% arrange(org_unit) %>% pull(org_unit), 
+      width = "40%",
+      choices = GET("http://127.0.0.1:8000/org_units") %>%  
+        content() %>%
+        as_vector(), 
       selected = "Kenya", multiple = F
     ),
+    actionButton(ns("get_data_from_api_btn"), "Get Data", style = "background-color: #dc3545;", width = "10%"),
     box(
       title = "Output",
       width = 12,
@@ -29,13 +35,29 @@ comparison_plotUI <- function(id) {
 comparison_plotServer <- function(id) {
   moduleServer(id, function(input, output, session) {
     
-    plotting_df <- eventReactive(list(input$org_unit, input$analytic), {
-      response %>% 
-        filter(
-          org_unit == input$org_unit,
-          analytic == input$analytic
-        ) %>% 
+    plotting_df <- eventReactive(input$get_data_from_api_btn, {
+      
+      url <- "http://127.0.0.1:8000/data"
+      params <- list(
+        analytic = input$analytic, org_unit = input$org_unit
+      )
+      
+      res <- GET(url, query = params, add_headers(accept = "application/json"))
+      
+      # Print the content of the response
+      df <- content(res, "text") %>% fromJSON()
+      
+      df <- df$data %>% 
+        mutate(period = period %>% ymd()) %>% 
         arrange(period)
+      
+      
+      # response %>% 
+      #   filter(
+      #     org_unit == input$org_unit,
+      #     analytic == input$analytic
+      #   ) %>% 
+      #   arrange(period)
     })
     
     output$comparison_plot <- renderHighchart({
