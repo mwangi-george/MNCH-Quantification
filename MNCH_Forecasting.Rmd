@@ -1,0 +1,167 @@
+
+```{r}
+dbGetQuery(
+  other_counties, 
+  "select distinct product_name from forecasts_all_counties where product_name like 'labetalol %'") %>% pull(product_name)
+```
+
+```{r}
+dbGetQuery(
+  other_counties, 
+  "select distinct county, product_name from forecasts_all_counties where product_name like 'labetalol %'")
+
+
+search_data <- function(db_conn, table_name, search_key, product_column = "item_description_name_form_strength") {
+  
+  query <- glue(
+    "
+    SELECT 
+      county,
+      {product_column} as product_name,
+      pack_size,
+      --ROUND(AVG(price_kes)) as avg_price_kes,
+      ROUND(SUM(quantity_required_for_period_specified_above), 0) as quantity_required
+    FROM {table_name}
+    WHERE 
+      {product_column} LIKE '{search_key}'
+    GROUP BY {product_column}, county
+    "
+  )
+  
+  res <- dbGetQuery(
+    db_conn, query
+  )
+  return(res)
+}
+
+
+search_data(other_counties, "forecasts_all_counties", "Hydra%", "product_name")
+```
+
+
+
+# 2020
+
+```{r}
+library(openxlsx)
+library(readxl)
+
+files <- dir_ls("2021-Quantification-Results/xlsx-files/")
+
+
+files[1] %>% excel_sheets() %>% as_tibble() %>% filter(value != "All Counties") %>% pull(value)
+
+map(
+  files, ~ excel_sheets(.x) %>% as_tibble() %>% filter(!value %>% str_detect("All")) %>% pull(value)
+)
+
+files[1] %>% 
+  read_excel(sheet = files[1] %>% excel_sheets() %>% as_tibble() %>% filter(value %>% str_detect("All")) %>% pull(value))
+
+df <- map_df(
+  files,
+  ~ read_excel(.x, sheet = .x %>% excel_sheets() %>% as_tibble() %>% filter(value %>% str_detect("All")) %>% pull(value))
+) %>% clean_names()
+
+
+write_csv(df, "2021-Quantification-Results/xlsx-files/all")
+
+
+```
+
+
+```{r}
+product_str
+
+
+df %>% 
+  filter(item %in% product_list) %>% 
+  summarise(
+    total_quantity_required = round(sum(total_quantity_required, na.rm = TRUE)),
+    .by = c(item, pack_size, county)
+  ) %>% 
+  rename(product_name = item) -> df_summary
+  
+df_summary %>% 
+  write.xlsx(
+    "2021-Quantification-Results/xlsx-files/mnch_forecasts.xlsx"
+  )
+
+df_summary %>% 
+  distinct(product_name)
+
+product_list %>% as_tibble() %>% 
+  anti_join(df_summary, by = join_by(value == product_name)) %>% 
+  write.xlsx("2021-Quantification-Results/xlsx-files/missing_mnch_from_forecasts.xlsx")
+```
+
+
+```{r}
+df %>% 
+  filter(
+    item %>% str_detect("Anti")
+  ) %>% 
+  distinct(item)
+```
+
+
+```{r}
+search_data(other_counties, "forecasts_all_counties", "Caff", "product_name")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
