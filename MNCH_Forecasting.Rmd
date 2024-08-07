@@ -45,6 +45,7 @@ search_data(other_counties, "forecasts_all_counties", "Hydra%", "product_name")
 ```{r}
 library(openxlsx)
 library(readxl)
+library(fs)
 
 files <- dir_ls("2021-Quantification-Results/xlsx-files/")
 
@@ -55,8 +56,9 @@ map(
   files, ~ excel_sheets(.x) %>% as_tibble() %>% filter(!value %>% str_detect("All")) %>% pull(value)
 )
 
-files[1] %>% 
-  read_excel(sheet = files[1] %>% excel_sheets() %>% as_tibble() %>% filter(value %>% str_detect("All")) %>% pull(value))
+df <- files[1] %>% 
+  read_excel(sheet = files[1] %>% excel_sheets() %>% as_tibble() %>% filter(value %>% str_detect("All")) %>% pull(value)) %>% 
+   clean_names()
 
 df <- map_df(
   files,
@@ -83,8 +85,9 @@ df %>%
   rename(product_name = item) -> df_summary
   
 df_summary %>% 
+  pivot_wider(names_from = county, values_from = total_quantity_required) %>% 
   write.xlsx(
-    "2021-Quantification-Results/xlsx-files/mnch_forecasts.xlsx"
+    "2021-Quantification-Results/results/mnch_forecasts.xlsx"
   )
 
 df_summary %>% 
@@ -97,11 +100,8 @@ product_list %>% as_tibble() %>%
 
 
 ```{r}
-df %>% 
-  filter(
-    item %>% str_detect("Anti")
-  ) %>% 
-  distinct(item)
+df_summary %>% 
+  pivot_wider(names_from = county, values_from = total_quantity_required)
 ```
 
 
@@ -134,16 +134,17 @@ test <- content(response, "text") %>% fromJSON()
 test$data
 ```
 
-
 ```{r}
-curl -X 'GET' \
-  'http://127.0.0.1:8000/products' \
-  -H 'accept: application/json'
+pacman::p_load(timetk)
 
 
-GET("http://127.0.0.1:8000/products") %>%  
-  content() %>%
-  as_vector()
+response %>% 
+  filter(
+    analytic == "Chlorhexidine gel, 7.1% (as digluconate) (20 g tube) (Tube)",
+    org_unit == "Kenya"
+  ) %>% 
+  arrange(period) %>% 
+  tk_anomaly_diagnostics(period, value)
 ```
 
 
