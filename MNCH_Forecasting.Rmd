@@ -150,11 +150,53 @@ response %>%
 
 
 
+```{r}
+library(timetk)
+
+
+response %>% 
+  unite("id", analytic, org_unit,  sep = "__") %>% 
+  filter(
+    id == "Oxytocin Injection 10 I.U. (Ampoule)__Kenya"
+  ) %>% 
+  plot_time_series(period, value, .legend_show = T, .title = "Time Series Plot for Oxytocin Injection 10 I.U. (Ampoule)__Kenya")
+
+```
 
 
 
+```{r}
+response %>% 
+  unite("id", analytic, org_unit,  sep = "__") %>% 
+  filter(
+    id == "Oxytocin Injection 10 I.U. (Ampoule)__Kenya"
+  ) %>% 
+  plot_anomaly_diagnostics(period, value, .legend_show = T, .title = "Time Series Plot for Oxytocin Injection 10 I.U. (Ampoule)__Kenya")
+
+```
 
 
+```{r}
+anomaly_input <- response %>% 
+  unite("id", analytic, org_unit,  sep = "__")
+
+anomalized_df <- anomaly_input %>% 
+  group_by(id) %>% 
+  anomalize(period, value)
+
+anomalized_df %>% 
+  separate(id, into = c("analytic", "org_unit"), sep = "__") %>% 
+  write_csv("data/mnch_moh_647_data_anomalized.csv")
+  filter(analytic == "Oxytocin Injection 10 I.U. (Ampoule)", org_unit == "Kenya") %>% 
+  plot_anomalies_cleaned(period)
+  
+anomalized_df %>% 
+  mutate(final_value = case_when(anomaly == "Yes" ~ trend, .default = observed))
+
+anomalized_df %>%
+        transmute(ds = period, y = round(observed_clean)) %>%
+        arrange(ds)
+```
 
 
 

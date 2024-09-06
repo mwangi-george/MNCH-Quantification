@@ -3,6 +3,13 @@ pacman::p_load(DBI, janitor, dhis2r, tidyverse)
 
 data_elements <- c("GOFxghdlf5n", "qoEFejcajz1", "WbDKZsPHAOK", "pxdnKL8X8aP") %>% str_c(".hDCmaVTXH7W")
 
+product_names <- read_csv("data/product_names.csv", show_col_types = F)
+
+set_names(
+  product_names %>% pull(dataid),
+  product_names %>% pull(dataname)
+) -> product_names_list
+
 
 my_db_connection <- dbConnect(drv = odbc::odbc(), .connection_string = "Driver={PostgreSQL ANSI(x64)};",
                               database = "FP", UID = Sys.getenv("POSTGRES_DB_NAME"), PWD = Sys.getenv("POSTGRES_DB_PASSWORD"),
@@ -26,7 +33,7 @@ dhis_con <- Dhis2r$new(
 
 # Extract and format
 response <- dhis_con$get_analytics(
-  analytic = data_elements,
+  analytic = product_names %>% pull(dataid),
   org_unit = org_units %>% pull(county_id),
   period = period,
   output_scheme = "NAME"

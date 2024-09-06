@@ -20,7 +20,8 @@ sidebar <- dashboardSidebar(
     flat = FALSE,
     compact = FALSE,
     childIndent = TRUE,
-    menuItem("Trend Analyis", tabName = "trend_analysis", icon = icon("chart-line"))
-    # menuItem("Forecasting", tabName = "pre_forecast_tab", icon = icon("wand-magic-sparkles"))
+    menuItem("Trend Analyis", tabName = "trend_analysis", icon = icon("chart-line")),
+    menuItem("Anomaly Detection", tabName = "anomaly_detection", icon = icon("wand-magic-sparkles")),
+    menuItem("Forecasting", tabName = "forecasting", icon = icon("wand-magic-sparkles"))
   )
 )
