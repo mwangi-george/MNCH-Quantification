@@ -1,3 +1,5 @@
+
+# Module User Interface
 forecastingUI <- function(id){
   ns <- NS(id)
   
@@ -64,6 +66,7 @@ forecastingUI <- function(id){
   )
 }
 
+# Module Server
 forecastingServer <- function(id) {
   moduleServer(id, function(input, output, session) {
     
@@ -147,7 +150,6 @@ forecastingServer <- function(id) {
         }
       })
       
-      
       output$forecast_summary_value <- renderValueBox({
         var <- forecast_table() %>% 
           summarize(
@@ -156,7 +158,6 @@ forecastingServer <- function(id) {
         
         valueBox(value = format(var, big.mark = ", "), subtitle = "Summary Value", color = "danger")
       })
-      
       
       # end of observer
     })

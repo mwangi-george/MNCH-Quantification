@@ -4,7 +4,7 @@ dir_ls("ui_components/") %>% map(., ~source(.x))
 
 # Build UI using sourced components
 ui <- dashboardPage(
-  # preloader = list(html = tagList(spin_1(), "Getting data, please wait..."), color = "navy"),
+  preloader = list(html = tagList(spin_1(), "Getting data, please wait..."), color = "red"),
   header = header,
   sidebar = sidebar,
   controlbar = controlbar,
